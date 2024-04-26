@@ -1,4 +1,10 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common'
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Query,
+  UseGuards,
+} from '@nestjs/common'
 import { JwtAuthGuard } from '@/infra/auth/jwt-auth.guard'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { z } from 'zod'
@@ -27,7 +33,9 @@ export class FetchRecentQuestionsController {
   async handle(@Query('page', queryValidationPipe) page: PageQueryParam) {
     const result = await this.fetchRecenteQuestionsUseCase.execute({ page })
 
-    if (result.isLeft()) throw new Error('Unexpected error')
+    if (result.isLeft()) {
+      throw new BadRequestException()
+    }
 
     const questions = result.value.questions
 
