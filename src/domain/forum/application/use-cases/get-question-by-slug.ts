@@ -3,6 +3,7 @@ import { Question } from '../../enterprise/entities/question'
 import { IQuestionRepository } from '../repositories/interfaces/questions-repository'
 
 import { ResourceNotFoundError } from '../../../../core/errors/resource-not-found-error'
+import { Injectable } from '@nestjs/common'
 
 interface GetQuestionBySlugUseCaseRequest {
   slug: string
@@ -14,6 +15,8 @@ type GetQuestionBySlugUseCaseResponse = Either<
     question: Question
   }
 >
+
+@Injectable()
 export class GetQuestionBySlugUseCase {
   constructor(private questionRepository: IQuestionRepository) {}
 
