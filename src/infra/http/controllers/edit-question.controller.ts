@@ -12,12 +12,12 @@ import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { z } from 'zod'
 import { EditQuestionQuestionUseCase } from '@/domain/forum/application/use-cases/edit-question'
 
-const createQuestionBodySchema = z.object({
+const editQuestionBodySchema = z.object({
   title: z.string(),
   content: z.string(),
 })
 
-type CreateQuestionBodySchema = z.infer<typeof createQuestionBodySchema>
+type EditQuestionBodySchema = z.infer<typeof editQuestionBodySchema>
 
 @Controller('/questions/:id')
 export class EditQuestionController {
@@ -26,8 +26,8 @@ export class EditQuestionController {
   @Put()
   @HttpCode(204)
   async handle(
-    @Body(new ZodValidationPipe(createQuestionBodySchema))
-    body: CreateQuestionBodySchema,
+    @Body(new ZodValidationPipe(editQuestionBodySchema))
+    body: EditQuestionBodySchema,
     @CurrentUser() user: UserPayload,
     @Param('id') questionId: string,
   ) {
