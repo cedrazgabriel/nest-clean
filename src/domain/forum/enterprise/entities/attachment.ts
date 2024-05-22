@@ -3,7 +3,7 @@ import { UniqueEntityId } from 'src/core/entities/unique-entity-id'
 
 interface AttachmentProps {
   title: string
-  link: string
+  url: string
 }
 
 export class Attachment extends EntityBase<AttachmentProps> {
@@ -12,7 +12,7 @@ export class Attachment extends EntityBase<AttachmentProps> {
   }
 
   get link() {
-    return this.props.link
+    return this.props.url
   }
 
   static create(props: AttachmentProps, id?: UniqueEntityId) {
