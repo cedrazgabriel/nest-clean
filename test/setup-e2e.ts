@@ -1,7 +1,13 @@
-import 'dotenv/config'
+import { config } from 'dotenv'
 import { PrismaClient } from '@prisma/client'
 import { randomUUID } from 'crypto'
 import { execSync } from 'child_process'
+
+// Carregar todas as variáveis de ambiente
+config({ path: '.env', override: true })
+
+// Carregar variáveis de ambiente de teste, e se já houver alguma pré definida anteriormente no .env, sobrescrever
+config({ path: '.env.test', override: true })
 
 const prisma = new PrismaClient()
 
