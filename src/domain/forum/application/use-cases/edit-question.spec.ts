@@ -12,22 +12,21 @@ let inMemoryQuestionAttachmentRepository: InMemoryQuestionAttachmentRepository
 
 let sut: EditQuestionQuestionUseCase
 
-describe('Delete question use case tests', () => {
+describe('Edit question use case tests', () => {
   beforeEach(() => {
     inMemoryQuestionAttachmentRepository =
       new InMemoryQuestionAttachmentRepository()
     inMemoryQuestionRepository = new InMemoryQuestionRepository(
       inMemoryQuestionAttachmentRepository,
     )
-    inMemoryQuestionAttachmentRepository =
-      new InMemoryQuestionAttachmentRepository()
+
     sut = new EditQuestionQuestionUseCase(
       inMemoryQuestionRepository,
       inMemoryQuestionAttachmentRepository,
     )
   })
 
-  test.skip('Deve ser possível editar uma questão', async () => {
+  test('Deve ser possível editar uma questão', async () => {
     const createdQuestion = makeQuestion(
       {
         authorId: new UniqueEntityId('author-1'),
