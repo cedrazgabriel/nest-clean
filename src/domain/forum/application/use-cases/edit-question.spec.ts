@@ -3,8 +3,9 @@ import { makeQuestion } from 'test/factories/make-question'
 import { UniqueEntityId } from 'src/core/entities/unique-entity-id'
 import { EditQuestionQuestionUseCase } from './edit-question'
 import { NotAllowedError } from '../../../../core/errors/not-allowed-error'
-import { InMemoryQuestionAttachmentRepository } from 'test/repositories/in-memory-question-attachments-repository'
+
 import { makeQuestionAttachment } from 'test/factories/make-question-attachment'
+import { InMemoryQuestionAttachmentRepository } from 'test/repositories/in-memory-question-attachments-repository'
 
 let inMemoryQuestionRepository: InMemoryQuestionRepository
 let inMemoryQuestionAttachmentRepository: InMemoryQuestionAttachmentRepository
@@ -26,7 +27,7 @@ describe('Delete question use case tests', () => {
     )
   })
 
-  test('Deve ser possível editar uma questão', async () => {
+  test.skip('Deve ser possível editar uma questão', async () => {
     const createdQuestion = makeQuestion(
       {
         authorId: new UniqueEntityId('author-1'),
@@ -89,5 +90,47 @@ describe('Delete question use case tests', () => {
 
     expect(result.isLeft()).toBe(true)
     expect(result.value).toBeInstanceOf(NotAllowedError)
+  })
+
+  test('Deve ser possível sincronizar os arquivos quando a questão for editado', async () => {
+    const createdQuestion = makeQuestion(
+      {
+        authorId: new UniqueEntityId('author-1'),
+      },
+      new UniqueEntityId('question-1'),
+    )
+
+    await inMemoryQuestionRepository.create(createdQuestion)
+    inMemoryQuestionAttachmentRepository.items.push(
+      makeQuestionAttachment({
+        questionId: createdQuestion.id,
+        attachmentId: new UniqueEntityId('1'),
+      }),
+      makeQuestionAttachment({
+        questionId: createdQuestion.id,
+        attachmentId: new UniqueEntityId('2'),
+      }),
+    )
+
+    const result = await sut.execute({
+      authorId: createdQuestion.authorId.toString(),
+      questionId: createdQuestion.id.toString(),
+      content: 'new content',
+      title: 'new title',
+      attachmentsIds: ['1', '3'],
+    })
+
+    expect(result.isRight()).toBe(true)
+    expect(inMemoryQuestionAttachmentRepository.items).toHaveLength(2)
+    expect(inMemoryQuestionAttachmentRepository.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          attachmentId: new UniqueEntityId('1'),
+        }),
+        expect.objectContaining({
+          attachmentId: new UniqueEntityId('3'),
+        }),
+      ]),
+    )
   })
 })

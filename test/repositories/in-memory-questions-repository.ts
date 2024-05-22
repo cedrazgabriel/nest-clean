@@ -40,11 +40,23 @@ export class InMemoryQuestionRepository implements IQuestionRepository {
 
     this.items[itemIndex] = question
 
+    await this.questionAttachmentRepository.createMany(
+      question.attachments.getNewItems(),
+    )
+
+    await this.questionAttachmentRepository.deleteMany(
+      question.attachments.getRemovedItems(),
+    )
+
     DomainEvents.dispatchEventsForAggregate(question.id)
   }
 
   async create(question: Question): Promise<void> {
     this.items.push(question)
+
+    await this.questionAttachmentRepository.createMany(
+      question.attachments.getItems(),
+    )
     DomainEvents.dispatchEventsForAggregate(question.id)
   }
 
