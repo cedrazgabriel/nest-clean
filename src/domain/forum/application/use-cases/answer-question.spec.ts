@@ -19,7 +19,7 @@ describe('Answer question tests', () => {
 
   test('Deve ser possível responder uma questão', async () => {
     const result = await sut.execute({
-      instructorId: '1',
+      authorId: '1',
       questionId: '1',
       content: 'Content',
       attachmentsIds: ['1', '2'],
@@ -34,5 +34,27 @@ describe('Answer question tests', () => {
       expect.objectContaining({ attachmentId: new UniqueEntityId('1') }),
       expect.objectContaining({ attachmentId: new UniqueEntityId('2') }),
     ])
+  })
+
+  test('Deve ser possível persistir anexos quando uam resposta for criada', async () => {
+    const result = await sut.execute({
+      questionId: '1',
+      authorId: '1',
+      content: 'Content',
+      attachmentsIds: ['1', '2'],
+    })
+
+    expect(result.isRight()).toBe(true)
+    expect(inMemoryAnswerAttachmentRepository.items).toHaveLength(2)
+    expect(inMemoryAnswerAttachmentRepository.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          attachmentId: new UniqueEntityId('1'),
+        }),
+        expect.objectContaining({
+          attachmentId: new UniqueEntityId('2'),
+        }),
+      ]),
+    )
   })
 })

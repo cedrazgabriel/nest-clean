@@ -18,8 +18,7 @@ describe('Delete answer use case tests', () => {
     inMemoryAnswerRepository = new InMemoryAnswersRepository(
       inMemoryAnswerAttachmentRepository,
     )
-    inMemoryAnswerAttachmentRepository =
-      new InMemoryAnswerAttachmentRepository()
+
     sut = new EditAnswerUseCase(
       inMemoryAnswerRepository,
       inMemoryAnswerAttachmentRepository,
@@ -86,5 +85,46 @@ describe('Delete answer use case tests', () => {
 
     expect(result.isLeft()).toBe(true)
     expect(result.value).toBeInstanceOf(NotAllowedError)
+  })
+
+  test('Deve ser possível sincronizar os arquivos quando uma resposta for editada', async () => {
+    const createdAnswer = makeAnswer(
+      {
+        authorId: new UniqueEntityId('author-1'),
+      },
+      new UniqueEntityId('question-1'),
+    )
+
+    await inMemoryAnswerRepository.create(createdAnswer)
+    inMemoryAnswerAttachmentRepository.items.push(
+      makeAnswerAttachment({
+        answerId: createdAnswer.id,
+        attachmentId: new UniqueEntityId('1'),
+      }),
+      makeAnswerAttachment({
+        answerId: createdAnswer.id,
+        attachmentId: new UniqueEntityId('2'),
+      }),
+    )
+
+    const result = await sut.execute({
+      authorId: createdAnswer.authorId.toString(),
+      answerId: createdAnswer.id.toString(),
+      content: 'new content',
+      attachmentsIds: ['1', '3'],
+    })
+
+    expect(result.isRight()).toBe(true)
+    expect(inMemoryAnswerAttachmentRepository.items).toHaveLength(2)
+    expect(inMemoryAnswerAttachmentRepository.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          attachmentId: new UniqueEntityId('1'),
+        }),
+        expect.objectContaining({
+          attachmentId: new UniqueEntityId('3'),
+        }),
+      ]),
+    )
   })
 })
