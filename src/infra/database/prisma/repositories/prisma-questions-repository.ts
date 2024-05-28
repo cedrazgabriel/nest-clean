@@ -8,12 +8,14 @@ import { IQuestionAttachmentRepository } from '@/domain/forum/application/reposi
 import { QuestionDetails } from '@/domain/forum/enterprise/entities/value-objects/question-details'
 import { PrismaQuestionDetailsMapper } from '../../mappers/prisma-question-details-mapper'
 import { DomainEvents } from '@/core/events/domain-events'
+import { ICacheRepository } from '@/infra/cache/cache-repository'
 
 @Injectable()
 export class PrismaQuestionRepository implements IQuestionRepository {
   constructor(
     private prisma: PrismaService,
     private questionAttachmentsRepository: IQuestionAttachmentRepository,
+    private cacheRepository: ICacheRepository,
   ) {}
 
   async findById(id: string): Promise<Question | null> {
@@ -37,6 +39,13 @@ export class PrismaQuestionRepository implements IQuestionRepository {
   }
 
   async findDetailsBySlug(slug: string): Promise<QuestionDetails | null> {
+    const cacheHit = await this.cacheRepository.get(`questions:${slug}:details`)
+
+    if (cacheHit) {
+      const cachedData = JSON.parse(cacheHit)
+      return cachedData
+    }
+
     const question = await this.prisma.question.findUnique({
       where: { slug },
       include: {
@@ -47,7 +56,14 @@ export class PrismaQuestionRepository implements IQuestionRepository {
 
     if (!question) return null
 
-    return PrismaQuestionDetailsMapper.toDomain(question)
+    const questionDetails = PrismaQuestionDetailsMapper.toDomain(question)
+
+    await this.cacheRepository.set(
+      `questions:${slug}:details`,
+      JSON.stringify(questionDetails),
+    )
+
+    return questionDetails
   }
 
   async findManyRecent({ page }: PaginationParams): Promise<Question[]> {
@@ -88,6 +104,7 @@ export class PrismaQuestionRepository implements IQuestionRepository {
       this.questionAttachmentsRepository.deleteMany(
         question.attachments.getRemovedItems(),
       ),
+      this.cacheRepository.delete(`questions:${data.slug}:details`),
     ])
 
     DomainEvents.dispatchEventsForAggregate(question.id)
