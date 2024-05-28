@@ -2,6 +2,7 @@ import { config } from 'dotenv'
 import { PrismaClient } from '@prisma/client'
 import { randomUUID } from 'crypto'
 import { execSync } from 'child_process'
+import { DomainEvents } from '@/core/events/domain-events'
 
 // Carregar todas as variáveis de ambiente
 config({ path: '.env', override: true })
@@ -25,6 +26,8 @@ const schemaId = randomUUID()
 
 beforeAll(async () => {
   const databaseUrl = generateUniqueDataBaseUrl(schemaId)
+
+  DomainEvents.shouldRun = false
 
   process.env.DATABASE_URL = databaseUrl
 

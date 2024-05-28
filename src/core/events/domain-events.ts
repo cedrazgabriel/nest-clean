@@ -9,6 +9,8 @@ export class DomainEvents {
   private static handlersMap: Record<string, DomainEventCallback[]> = {}
   private static markedAggregates: AggregateRoot<unknown>[] = []
 
+  public static shouldRun = true
+
   public static markAggregateForDispatch(aggregate: AggregateRoot<unknown>) {
     const aggregateFound = !!this.findMarkedAggregateByID(aggregate.id)
 
@@ -38,6 +40,8 @@ export class DomainEvents {
   public static dispatchEventsForAggregate(id: UniqueEntityId) {
     const aggregate = this.findMarkedAggregateByID(id)
 
+    if (!this.shouldRun) return
+    
     if (aggregate) {
       this.dispatchAggregateEvents(aggregate)
       aggregate.clearEvents()
