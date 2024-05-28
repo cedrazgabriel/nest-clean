@@ -29,7 +29,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
   async save(notification: Notification): Promise<void> {
     const data = PrismaNotificationMapper.toPersistence(notification)
 
-    this.prisma.notifications.update({
+    await this.prisma.notifications.update({
       where: { id: data.id },
       data,
     })
